@@ -1,3 +1,5 @@
+open Input
+
 (* Функция для разбиения строки по разделителю *)
 let split_string sep str =
   let rec aux acc i =
@@ -29,8 +31,10 @@ let () =
     match sampling_rate with
     | None -> Printf.printf "Частота дискретизации не указана.\n"
     | Some rate ->
-        Printf.printf "Алгоритмы интерполяции: %s\n" (String.concat ", " algorithms);
-        Printf.printf "Частота дискретизации: %d\n" rate
+        Printf.printf "Алгоритмы интерполяции: %s\n" (String.concat ", " (algorithms @ ["linear"]));
+        Printf.printf "Частота дискретизации: %d\n" rate;
+        let point = input_point () in
+        print_point point
   with
   | Failure msg -> Printf.eprintf "Ошибка: %s\n" msg
   | _ -> Printf.eprintf "Произошла неизвестная ошибка.\n"

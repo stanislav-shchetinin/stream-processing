@@ -1,7 +1,6 @@
 open Interpolations
 open Interpolation
 open Io
-open Utils
 
 type interpolation_process = {
   step : float;
@@ -9,6 +8,12 @@ type interpolation_process = {
   methods : t_interpolation list;
   last_computed_points : (string * float option) list;
 }
+
+let rec take n list =
+  match list with
+  | [] -> []
+  | _ when n <= 0 -> []
+  | x :: xs -> x :: take (n - 1) xs
 
 let generate_x_values start_x end_x step =
   let rec aux current =
@@ -54,7 +59,7 @@ let perform_interpolation points interpolations step (last_interpolated : (strin
       (interpolation.name, None)
   ) sorted_types 
 
-let rec update_runner runner =
+let rec continue_interpolation_process runner =
   let points = List.of_seq runner.points_stream in
   
   let last_interpolated = 
@@ -72,31 +77,31 @@ let rec update_runner runner =
     if Seq.length updated_points > required_points then Seq.drop 1 updated_points else updated_points
   in
   
-  update_runner {
+  continue_interpolation_process {
     runner with 
     points_stream = updated_points;
     last_computed_points = last_interpolated
   }
 
-  let start_interpolation_process runner =
-    let min_required_points = 2 in  
+let start_interpolation_process runner =
+  let min_required_points = 2 in  
+
+  let rec collect_initial_points remaining_points collected =
+    if remaining_points = 0 then collected
+    else 
+      let new_point = read_point () in
+      let updated_collected = Seq.append collected (Seq.return new_point) in
+      collect_initial_points (remaining_points - 1) updated_collected
+  in
+
+  let initial_data_points = collect_initial_points min_required_points Seq.empty in
   
-    let rec collect_initial_points remaining_points collected =
-      if remaining_points = 0 then collected
-      else 
-        let new_point = read_point () in
-        let updated_collected = Seq.append collected (Seq.return new_point) in
-        collect_initial_points (remaining_points - 1) updated_collected
-    in
-  
-    let initial_data_points = collect_initial_points min_required_points Seq.empty in
-    
-    let initial_interpolation_states = 
-      List.map (fun method_info -> (method_info.name, None)) runner.methods
-    in
-  
-    update_runner { 
-      runner with
-      points_stream = initial_data_points;
-      last_computed_points = initial_interpolation_states 
-    }
+  let initial_interpolation_states = 
+    List.map (fun method_info -> (method_info.name, None)) runner.methods
+  in
+
+  continue_interpolation_process { 
+    runner with
+    points_stream = initial_data_points;
+    last_computed_points = initial_interpolation_states 
+  }

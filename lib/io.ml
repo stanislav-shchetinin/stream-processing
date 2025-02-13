@@ -9,8 +9,7 @@ let print_points points =
   print_newline ()
 
 let read_point () =
-  print_endline "Введите точку (X Y через пробел):";
   let line = read_line () in
   match String.split_on_char ' ' line with
   | [x; y] -> (float_of_string x, float_of_string y)
-  | _ -> failwith "Некорректный ввод!"
+  | _ -> failwith "Invalid point"

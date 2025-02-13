@@ -1,0 +1,4 @@
+(test
+ (name test_fp3)
+ (libraries alcotest Lib)
+ (modules test_interpolation test_fp3 test_runner))

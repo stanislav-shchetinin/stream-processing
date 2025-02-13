@@ -1,4 +1,4 @@
 (library
  (name Lib)
- (libraries interpolations)
- (modules parser io stream))
+ (libraries interpolations io)
+ (modules parser stream))

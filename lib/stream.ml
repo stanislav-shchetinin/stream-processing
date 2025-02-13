@@ -56,7 +56,7 @@ let main_interpolation_process points runner : (t_algorithm * float option) list
         let result = interpolate interpolation x_start x_end pts in
         let last_x = Some ((List.hd (List.rev result)).x) in
         
-        print_points interpolation.algorithm result;
+        Output.print_points interpolation.algorithm result;
         
         (interpolation.algorithm, last_x)
       else
@@ -75,7 +75,7 @@ let last_interpolated =
     runner.last_computed_points
 in
 
-let new_point = read_point () in
+let new_point = Input.read_point () in
 let updated_points = Seq.append runner.points_stream (Seq.return new_point) in
 
 let required_points = List.fold_left (fun acc interpolation -> max acc interpolation.wsize) 0 runner.algorithms in
@@ -95,7 +95,7 @@ let start_interpolation_process runner =
   let rec collect_initial_points remaining_points collected =
     if remaining_points = 0 then collected
     else 
-      let new_point = read_point () in
+      let new_point = Input.read_point () in
       let updated_collected = Seq.append collected (Seq.return new_point) in
       collect_initial_points (remaining_points - 1) updated_collected
   in

@@ -33,10 +33,9 @@ let main_interpolation_process points runner : (t_algorithm * float option) list
   in
 
   let get_start_x interpolation pts =
-    match List.assoc_opt interpolation.algorithm runner.last_computed_points with
+    match List.assoc_opt interpolation.algorithm runner.last_computed_points |> Option.join with
     | None -> (List.hd pts).x
-    | Some (Some x) -> x +. runner.step
-    | Some None -> (List.hd pts).x
+    | Some x -> x +. runner.step
   in
 
   let interpolate interpolation x1 x2 pts =

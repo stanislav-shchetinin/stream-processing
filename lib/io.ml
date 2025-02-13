@@ -1,4 +1,5 @@
 open Printf
+open Interpolations.Types
 
 let print_points points =
   let x_values = List.map fst points in
@@ -11,5 +12,8 @@ let print_points points =
 let read_point () =
   let line = read_line () in
   match String.split_on_char ' ' line with
-  | [x; y] -> (float_of_string x, float_of_string y)
+  | [xi; yi] -> 
+    let x = float_of_string xi in
+    let y = float_of_string yi in 
+    {x; y}
   | _ -> failwith "Invalid point"

@@ -1,12 +1,11 @@
-open Interpolations
-open Interpolation
+open Interpolations.Types
 open Io
 
 type interpolation_process = {
   step : float;
-  points_stream : (float * float) Seq.t;
-  methods : t_interpolation list;
-  last_computed_points : (string * float option) list;
+  points_stream : t_point Seq.t;
+  algorithms : t_interpolation list;
+  last_computed_points : (t_algorithm * float option) list;
 }
 
 let rec take n list =
@@ -25,8 +24,8 @@ let generate_x_values start_x end_x step =
   in
   fun () -> aux start_x
 
-let perform_interpolation points interpolations step (last_interpolated : (string * float option) list) : (string * float option) list =
-  let sorted_types = List.sort (fun a b -> compare (a.wsize) b.wsize) interpolations in
+let main_interpolation_process points interpolations step (last_interpolated : (t_algorithm * float option) list) : (t_algorithm * float option) list =
+  let sorted_types = List.sort (fun a b -> compare a.wsize b.wsize) interpolations in
   
   List.map (fun interpolation ->
     let relevant_points = 
@@ -37,26 +36,30 @@ let perform_interpolation points interpolations step (last_interpolated : (strin
     in
     if List.length relevant_points >= interpolation.wsize then
       let end_point = List.hd (List.rev relevant_points) in
-      let last_x = List.assoc_opt interpolation.name last_interpolated in
+      let last_x = List.assoc_opt interpolation.algorithm last_interpolated in
       let start_x = 
         match last_x with
-        | None -> fst (List.hd relevant_points)
+        | None -> (List.hd relevant_points).x
         | Some (Some x) -> x +. step
-        | Some None -> fst (List.hd relevant_points)
+        | Some None -> (List.hd relevant_points).x
       in
-      if start_x < fst end_point then
+      if start_x < end_point.x then
         let result =
-          generate_x_values start_x (fst end_point) step
+          generate_x_values start_x end_point.x step
           |> Seq.map (fun x -> (x, interpolation.func relevant_points x))
           |> List.of_seq
         in
-        print_endline interpolation.name;
+        print_endline (
+          match interpolation.algorithm with 
+          | Linear -> "Linear" 
+          | Lagrange -> "Lagrange"
+        );
         print_points result;
-        (interpolation.name, Some (fst (List.hd (List.rev result))))
+        (interpolation.algorithm, Some (fst (List.hd (List.rev result))))
       else
-        (interpolation.name, match last_x with Some x -> x | None -> None)
+        (interpolation.algorithm, match last_x with Some x -> x | None -> None)
     else
-      (interpolation.name, None)
+      (interpolation.algorithm, None)
   ) sorted_types 
 
 let rec continue_interpolation_process runner =
@@ -64,7 +67,7 @@ let rec continue_interpolation_process runner =
   
   let last_interpolated = 
     if List.length points >= 2 then 
-      perform_interpolation points runner.methods runner.step runner.last_computed_points
+      main_interpolation_process points runner.algorithms runner.step runner.last_computed_points
     else
       runner.last_computed_points
   in
@@ -72,7 +75,7 @@ let rec continue_interpolation_process runner =
   let new_point = read_point () in
   let updated_points = Seq.append runner.points_stream (Seq.return new_point) in
   
-  let required_points = List.fold_left (fun acc interpolation -> max acc interpolation.wsize) 0 runner.methods in
+  let required_points = List.fold_left (fun acc interpolation -> max acc interpolation.wsize) 0 runner.algorithms in
   let updated_points =
     if Seq.length updated_points > required_points then Seq.drop 1 updated_points else updated_points
   in
@@ -97,7 +100,7 @@ let start_interpolation_process runner =
   let initial_data_points = collect_initial_points min_required_points Seq.empty in
   
   let initial_interpolation_states = 
-    List.map (fun method_info -> (method_info.name, None)) runner.methods
+    List.map (fun method_info -> (method_info.algorithm, None)) runner.algorithms
   in
 
   continue_interpolation_process { 

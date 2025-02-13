@@ -1,3 +1,3 @@
 (library
  (name interpolations)
- (modules interpolation linear lagrange))
+ (modules types linear lagrange))

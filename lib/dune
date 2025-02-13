@@ -1,4 +1,4 @@
 (library
  (name Lib)
  (libraries interpolations)
- (modules parser io runner utils))
+ (modules parser io stream utils))

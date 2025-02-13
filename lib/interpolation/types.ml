@@ -11,4 +11,8 @@ type t_interpolation = {
   func : t_point list -> float -> float;
 }
 
+let algorithm_to_string = function
+  | Linear -> "linear"
+  | Lagrange -> "lagrange"
+
 let create_interpolation algorithm wsize func = { algorithm; wsize; func } 

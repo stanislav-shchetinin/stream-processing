@@ -1,13 +1,10 @@
 open Printf
 open Interpolations.Types
 
-let print_points points =
-  let x_values = List.map fst points in
-  let y_values = List.map snd points in
-  List.iter (printf "%.2f\t") x_values;
-  print_newline ();
-  List.iter (printf "%.2f\t") y_values;
-  print_newline ()
+let print_points algorithm points =
+  List.iter (fun { x; y } ->
+    printf "> %s: %.1f %.1f\n" (algorithm_to_string algorithm) x y
+  ) points
 
 let read_point () =
   let line = read_line () in

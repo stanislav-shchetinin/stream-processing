@@ -40,7 +40,7 @@ let main_interpolation_process points runner : (t_algorithm * float option) list
 
   let interpolate interpolation x1 x2 pts =
     generate_x_values x1 x2 runner.step
-    |> Seq.map (fun x -> (x, interpolation.func pts x))
+    |> Seq.map (fun x -> {x; y = interpolation.func pts x})
     |> List.of_seq
   in
 
@@ -54,14 +54,9 @@ let main_interpolation_process points runner : (t_algorithm * float option) list
 
       if x_start < x_end then
         let result = interpolate interpolation x_start x_end pts in
-        let last_x = Some (fst (List.hd (List.rev result))) in
+        let last_x = Some ((List.hd (List.rev result)).x) in
         
-        let method_name = match interpolation.algorithm with
-          | Linear -> "Linear"
-          | Lagrange -> "Lagrange"
-        in
-        print_endline method_name;
-        print_points result;
+        print_points interpolation.algorithm result;
         
         (interpolation.algorithm, last_x)
       else

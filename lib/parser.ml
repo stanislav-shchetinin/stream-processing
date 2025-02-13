@@ -9,7 +9,7 @@ let parse args =
         step = stepa; 
         points_stream = Seq.empty; 
         algorithms;
-        last_computed_points = List.map (fun i -> (i.algorithm, None)) algorithms;
+        last_computed_points = List.map (fun x -> (x.algorithm, None)) algorithms;
       }
     | "-a" :: "linear" :: rest -> aux rest stepa (Linear.interpolation :: algorithms)
     | "-a" :: "lagrange" :: rest -> aux rest stepa (Lagrange.interpolation :: algorithms)

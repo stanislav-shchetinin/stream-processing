@@ -30,7 +30,7 @@ jobs:
       - run: opam install base stdio alcotest qcheck-alcotest dune cmdliner -y
 
       - run: opam exec -- dune build
-      # - run: opam exec -- dune runtest --verbose
+      - run: opam exec -- dune runtest --verbose
 
       - run: opam install zanuda.1.0.0 -y
       - run: opam exec -- zanuda ./bin/*.ml ./test/*.ml

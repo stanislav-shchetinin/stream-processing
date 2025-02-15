@@ -14,15 +14,11 @@ let rec take n list =
   | _ when n <= 0 -> []
   | x :: xs -> x :: take (n - 1) xs
 
-let generate_x_values start_x end_x step =
-  let rec aux current =
-    if current >= end_x then Seq.Nil
-    else 
-      let next = current +. step in
-      if next > end_x then Seq.Cons (current, fun () -> Seq.Nil)
-      else Seq.Cons (current, fun () -> aux next)
-  in
-  fun () -> aux start_x
+let linspace left right step : float Seq.t =
+  let eps = 1e-8 in
+  Seq.ints 0
+  |> Seq.map (fun index -> left +. (step *. float_of_int index))
+  |> Seq.take_while (fun x -> x < right +. eps)
 
 let main_interpolation_process points runner : (t_algorithm * float option) list =
   let sorted_methods = List.sort (fun a b -> compare a.wsize b.wsize) runner.algorithms in
@@ -39,7 +35,7 @@ let main_interpolation_process points runner : (t_algorithm * float option) list
   in
 
   let interpolate interpolation x1 x2 pts =
-    generate_x_values x1 x2 runner.step
+    linspace x1 x2 runner.step
     |> Seq.map (fun x -> {x; y = interpolation.func pts x})
     |> List.of_seq
   in

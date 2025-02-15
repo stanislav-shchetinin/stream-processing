@@ -62,22 +62,22 @@ let main_interpolation_process points runner : (t_algorithm * float option) list
   List.map process_interpolation sorted_methods
 
 let rec continue_interpolation_process runner =
-let points = List.of_seq runner.points_stream in
+  let points = List.of_seq runner.points_stream in
 
-let last_interpolated = 
-  if List.length points >= 2 then 
-    main_interpolation_process points runner
-  else
-    runner.last_computed_points
-in
+  let last_interpolated = 
+    if List.length points >= 2 then 
+      main_interpolation_process points runner
+    else
+      runner.last_computed_points
+  in
 
-let new_point = Input.read_point () in
-let updated_points = Seq.append runner.points_stream (Seq.return new_point) in
+  let new_point = Input.read_point () in
+  let updated_points = Seq.append runner.points_stream (Seq.return new_point) in
 
-let required_points = List.fold_left (fun acc interpolation -> max acc interpolation.wsize) 0 runner.algorithms in
-let updated_points =
-  if Seq.length updated_points > required_points then Seq.drop 1 updated_points else updated_points
-in
+  let required_points = List.fold_left (fun acc interpolation -> max acc interpolation.wsize) 0 runner.algorithms in
+  let updated_points =
+    if Seq.length updated_points > required_points then Seq.drop 1 updated_points else updated_points
+  in
 
 continue_interpolation_process {
   runner with 
